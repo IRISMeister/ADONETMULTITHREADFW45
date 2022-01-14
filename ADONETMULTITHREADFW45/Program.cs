@@ -10,7 +10,8 @@ namespace ADONETMULTITHREADFW45
 {
     class Program
     {
-        private static object lockTest = new object();
+        private static IRISConnection IRISConnect = null;
+
         static void Main(string[] args)
         {
             String host = "localhost";
@@ -19,7 +20,7 @@ namespace ADONETMULTITHREADFW45
             String password = "SYS";
             String Namespace = "SAMPLES";
 
-            IRISConnection IRISConnect = new IRISConnection();
+            IRISConnect = new IRISConnection();
             IRISConnect.ConnectionString = "Server = " + host
                 + "; Port = " + port + "; Namespace = " + Namespace
                 + "; Password = " + password + "; User ID = " + username + ";"
@@ -28,22 +29,29 @@ namespace ADONETMULTITHREADFW45
             IRISConnect.Open();
 
             Task<int> task1 = Task.Run(() => {
-                return HeavyMethod1(IRISConnect);
+                return HeavyMethod1();
             });
             Thread.Sleep(1000);
 
             Task<int> task2 = Task.Run(() => {
-                return LightMethod1(IRISConnect);
+                return LightMethod1();
             });
-            Task.WhenAll(task1, task2);
-            Console.WriteLine(task1.Result + " " + task2.Result);
+
+            Task<int> task3 = Task.Run(() => {
+                return LightMethod1();
+            });
+
+            Task.WhenAll(task1, task2, task3);
+            int r = task1.Result;
+            r = task2.Result;
+            r = task3.Result;
 
             IRISConnect.Close();
             Console.WriteLine("Press any key to continue...");
             Console.ReadKey();
 
         }
-        static int HeavyMethod1(IRISConnection IRISConnect)
+        static int HeavyMethod1()
         {
             Console.WriteLine("Very heavy query started");
 
@@ -61,16 +69,11 @@ namespace ADONETMULTITHREADFW45
             Reader.Close();
             cmd4.Dispose();
 
-            Console.WriteLine("ActiveConnectionCount:"+IRISPoolManager.ActiveConnectionCount);
-            Console.WriteLine("IdleCount:" + IRISPoolManager.IdleCount());
-            Console.WriteLine("InUseCount:" + IRISPoolManager.InUseCount());
-
-
             Console.WriteLine("Very heavy query finished");
             return 1;
         }
 
-        static int LightMethod1(IRISConnection IRISConnect)
+        static int LightMethod1()
         {
             Console.WriteLine("Light query started");
 
@@ -87,10 +90,6 @@ namespace ADONETMULTITHREADFW45
 
             Reader.Close();
             cmd4.Dispose();
-
-            Console.WriteLine("ActiveConnectionCount:" + IRISPoolManager.ActiveConnectionCount);
-            Console.WriteLine("IdleCount:" + IRISPoolManager.IdleCount());
-            Console.WriteLine("InUseCount:" + IRISPoolManager.InUseCount());
 
             Console.WriteLine("Light query finished");
             return 2;
