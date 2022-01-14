@@ -33,7 +33,7 @@ namespace ADONETMULTITHREADFW45
             Thread.Sleep(1000);
 
             Task<int> task2 = Task.Run(() => {
-                return LiteMethod1(IRISConnect);
+                return LightMethod1(IRISConnect);
             });
             Task.WhenAll(task1, task2);
             Console.WriteLine(task1.Result + " " + task2.Result);
@@ -70,7 +70,7 @@ namespace ADONETMULTITHREADFW45
             return 1;
         }
 
-        static int LiteMethod1(IRISConnection IRISConnect)
+        static int LightMethod1(IRISConnection IRISConnect)
         {
             Console.WriteLine("Light query started");
 
